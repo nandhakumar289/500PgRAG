@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "ragdemonstration"
+version = "0.1.0"
+description = "Conversational QA system to efficiently extract information from a 500-page document using advanced NLP and ML techniques."
+authors = ["nandha"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+llama-index = "^0.12.19"
+llama-index-vector-stores-milvus = "^0.5.0"
+llama-index-llms-ollama = "^0.5.2"
+llama-index-embeddings-ollama = "^0.5.0"
+llama-index-embeddings-huggingface = "^0.5.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
