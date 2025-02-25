@@ -10,19 +10,24 @@ llm = OpenAI(model="gpt-4o")
 # ------------------------------------------------------------------------------------#
 
 from llama_index.vector_stores.milvus import MilvusVectorStore
+from llama_index.core import VectorStoreIndex
+import asyncio
+
 
 collection_name = "source_docs_collection"
 user_query = "Does this support I2C?"
 
-
-def get_vector_store(collection_name) -> MilvusVectorStore:
-
-    return MilvusVectorStore(
+def get_vector_store_index(collection_name) -> VectorStoreIndex:
+    vector_store = MilvusVectorStore(
         uri="http://localhost:19530",
         dim=768,
         collection_name=collection_name,
     )
-
+    index = VectorStoreIndex.from_vector_store(
+        vector_store=vector_store
+    )
+    
+    return index
 
 from llama_index.core import Settings
 from custom_embedding_model import CustomEmbedding
@@ -34,12 +39,6 @@ tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name)
 Settings.embed_model = CustomEmbedding(
     model_name=model_name, model=model, tokenizer=tokenizer
-)
-
-from llama_index.core import VectorStoreIndex
-
-index = VectorStoreIndex.from_vector_store(
-    vector_store=get_vector_store(collection_name=collection_name)
 )
 
 
@@ -58,6 +57,7 @@ def create_search_query(user_query: str):
 # Retrieve relevant text
 def relevant_text_retriever(search_query):
     print("Retrieving relevant text...")
+    index = get_vector_store_index(collection_name)
     retriever = index.as_retriever(similarity_top_k=30)
     retrieved_nodes = retriever.retrieve(search_query)
     return retrieved_nodes
@@ -96,3 +96,7 @@ def orchestrator(user_query):
     context = context_retriever(retrieved_nodes)
     response = response_synthesizer(user_query, context)
     print(response)
+    return response.text
+    
+if __name__ == "__main__":
+    orchestrator(user_query)
